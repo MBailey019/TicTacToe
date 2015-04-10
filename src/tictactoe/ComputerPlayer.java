@@ -6,6 +6,7 @@
 
 package tictactoe;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -26,12 +27,19 @@ public class ComputerPlayer extends Player{
         super(aName);
         brain = new ArrayList<>();
     }
+    
+    public ComputerPlayer(String aName, String brainFile) throws FileNotFoundException{
+        super(aName);
+        brain = fileToBrain(brainFile);
+    }
 
     @Override
     public int[] provideInput(int max)
     {
-        int[][] currentBoard = getGame().getBoard();
-        String boardString = currentBoard.toString();
+        Game currentGame = getGame();
+        int[][] currentBoard = currentGame.getBoard();
+        String boardString = currentGame.toString();
+        //System.out.println("THIS: " + boardString);
         ArrayList<int[]> possibleMoves = new ArrayList<>();
         
         for (int row =0; row < currentBoard.length; row++)
@@ -46,9 +54,11 @@ public class ComputerPlayer extends Player{
             }
         }
         
+        int gameStringSize = 2 * (getGame().BOARD_SIZE * getGame().BOARD_SIZE);
         for (String previousGame: brain)
         {
-            String previousBoard = previousGame.substring(0, 18);
+            String previousBoard = previousGame.substring(0, gameStringSize);
+            //System.out.println("PREV: " + previousBoard); 
             if (previousBoard.equals(boardString))
             {
                 Scanner previousGameScanner = new Scanner(previousGame);
@@ -89,33 +99,40 @@ public class ComputerPlayer extends Player{
         if (state == Game.PlayerState.LOSER)
         {
             String currentBoard = getGame().toString();
+           // System.out.println("currentBoard: "+currentBoard);
             for (int i=0; i<brain.size(); i++)
             {
                 String pastGame = brain.get(i);
+                //if (i<1) System.out.println(pastGame);
                 Scanner brainScanner = new Scanner(pastGame).useDelimiter(";");
                 String pastBoard = brainScanner.next();
+                //if (i<1) System.out.println(pastBoard);
+                //if (i<1) System.out.println(currentBoard);
                 if (currentBoard.equals(pastBoard))
                 {
+                    //System.out.println("fucking MAtch!!===");
+                    //System.out.println("pastBoard");
                     String updatedGame = pastGame+lastMove;
                     brain.set(i, updatedGame);
                     brainScanner.close();
                     return;
                 }
             }
-            brain.add(currentBoard+lastMove);
+            brain.add(currentBoard+";"+lastMove);
         }
-        System.out.println(brain.toString());
+        //System.out.println(brain.toString());
     }
     
     public void brainToFile(){
         int gameSize = getGame().BOARD_SIZE;
-        String outFilename = getName()+"s_brain-"+gameSize+"X"+gameSize;
+        String outFilename = getName()+"_brain-"+gameSize+"X"+gameSize;
         try
         {
             PrintWriter brainWriter = new PrintWriter(outFilename+".txt");
             try
             {
                 for (String previousGame: brain){
+                    //brainWriter.print(brain.indexOf(previousGame));
                     brainWriter.println(previousGame);
                 }
             }
@@ -128,5 +145,18 @@ public class ComputerPlayer extends Player{
         {
             Logger.getLogger(ComputerPlayer.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    private ArrayList<String> fileToBrain(String filename) throws FileNotFoundException{
+        File newBrainFile = new File(filename);
+        ArrayList<String> freshBrain;
+        try (Scanner brainScanner = new Scanner(newBrainFile)) {
+            freshBrain = new ArrayList<>();
+            while(brainScanner.hasNextLine()){
+                String gameMemory = brainScanner.nextLine();
+                freshBrain.add(gameMemory);
+            }
+        } 
+        return freshBrain;
     }
 }    

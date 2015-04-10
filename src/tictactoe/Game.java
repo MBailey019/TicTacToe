@@ -80,7 +80,7 @@ public class Game {
             }
         }   
         
-        boardString.append(";");
+        //boardString.append(";");
         return boardString.toString();
     }
 
@@ -102,7 +102,7 @@ public class Game {
     public void placeMark(int x, int y)
     {
         board[x][y] = currentPlayer;
-        System.out.println(players[currentPlayer+1].getName()+" moved: "+x+", "+y);
+        //System.out.println(players[currentPlayer+1].getName()+" moved: "+x+", "+y);
         checkForWin();
     }
     
@@ -151,7 +151,7 @@ public class Game {
     public void printBoard()
     {
         if (!(players[0] instanceof ComputerPlayer &&
-            players[1] instanceof ComputerPlayer))
+            players[2] instanceof ComputerPlayer))
         {
         for (int row = 0; row < board.length; row++)
         {
