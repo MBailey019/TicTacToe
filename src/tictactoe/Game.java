@@ -1,5 +1,6 @@
 package tictactoe;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -23,19 +24,20 @@ public class Game {
     private int currentPlayer;
     private int winner = 0;
     
-    public final int BOARD_SIZE = 3;
+    public final int BOARD_SIZE;
     public enum PlayerState { WINNER, LOSER, NEITHER;}
     
-    public static Game setupGame(Player playerOne, Player playerTwo)
+    public static Game setupGame(int size, Player playerOne, Player playerTwo)
     {
-        Game newGame = new Game(playerOne, playerTwo);
+        Game newGame = new Game(size, playerOne, playerTwo);
         playerOne.setGame(newGame);
         playerTwo.setGame(newGame);
         return newGame;
     }
     
-    public Game(Player player, Player otherPlayer)
+    public Game(int size, Player player, Player otherPlayer)
     {
+        BOARD_SIZE = size;
         players = new Player[]{player, null, otherPlayer};
         board = new int[BOARD_SIZE][BOARD_SIZE];
         currentPlayer = 1;
@@ -51,6 +53,35 @@ public class Game {
                 board[i][j] = 0;
             }
         }
+        winner = 0;
+    }
+    
+    public int getWinner() 
+    {
+        return winner;
+    }
+    
+    public int[][] getBoard(){
+        return board;
+    }
+    
+    @Override
+    public String toString()
+    {
+        StringBuilder boardString = new StringBuilder("");
+        
+        for (int row =0; row<board.length; row++)
+        {
+            for (int column =0; column<board[row].length; column++)
+            {
+                int placeValue = board[row][column];
+                String placeString = String.format("%2d", placeValue);
+                boardString.append(placeString);
+            }
+        }   
+        
+        boardString.append(";");
+        return boardString.toString();
     }
 
     public void currentPlayerMark()
@@ -119,6 +150,9 @@ public class Game {
     
     public void printBoard()
     {
+        if (!(players[0] instanceof ComputerPlayer &&
+            players[1] instanceof ComputerPlayer))
+        {
         for (int row = 0; row < board.length; row++)
         {
             for (int column = 0; column < board[row].length; column++)
@@ -132,6 +166,8 @@ public class Game {
             if (row < board.length-1){ System.out.print("\n-----\n");}
         }   
         System.out.print("\n");
+        System.out.println(toString());
+        }
     }
     
     public void switchPlayer()
@@ -150,33 +186,20 @@ public class Game {
     
     public void announceDraw()
     {
-        clearBoard();
+        winner = -2;
         
         System.out.println("you're both losers.");
         players[currentPlayer+1].postGame(PlayerState.NEITHER);
         players[-currentPlayer+1].postGame(PlayerState.NEITHER);
     }
-
-    public int getWinner() 
-    {
-        return winner;
-    }
     
-    @Override
-    public String toString()
-    {
-        StringBuilder boardString = new StringBuilder("");
-        
-        for (int row =0; row<board.length; row++)
-        {
-            for (int column =0; column<board[row].length; column++)
-            {
-                boardString.append(String.valueOf(board[row][column]));
+    public void endGame(){
+        for( Player player: players ){
+            if (player instanceof ComputerPlayer){
+                ComputerPlayer computerPlayer = (ComputerPlayer)player;
+                computerPlayer.brainToFile();
             }
-        }   
-        
-        boardString.append(";");
-        return boardString.toString();
+        }
     }
 }    
     

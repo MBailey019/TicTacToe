@@ -6,9 +6,6 @@
 
 package tictactoe;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
 import java.util.Scanner;
 import java.util.InputMismatchException;
 
@@ -43,7 +40,6 @@ public class Player {
     }
     
     public int[] provideInput(int max){
-        int[] comparison = {-1,-1};
         int[] move = {-1,-1};
             String inputPrompt = NAME;
             inputPrompt += ": Please input 2 numbers between 0 and " + max;

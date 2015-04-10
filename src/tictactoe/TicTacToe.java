@@ -18,10 +18,15 @@ public class TicTacToe {
     public static void main(String[] args) {
         Player me = new Player("Frances");
         Player computer = new ComputerPlayer("Hal");
-        Game game = Game.setupGame(me, computer);
-        while (game.getWinner() == 0){
-            game.currentPlayerMark();
+        Game game = Game.setupGame(3, me, computer);
+        for (int gameNumber = 0; gameNumber<2; gameNumber++)
+        {    
+            while (game.getWinner() == 0)
+            {
+                game.currentPlayerMark();
+            }
+            game.clearBoard();
         }
+        game.endGame();
     }
-    
 }
