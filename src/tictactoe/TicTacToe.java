@@ -16,9 +16,9 @@ public class TicTacToe {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        Player me = new Player("Matt");
+        Player me = new Player("Frances");
         Player computer = new ComputerPlayer("Hal");
-        Game game = new Game(me, computer);
+        Game game = Game.setupGame(me, computer);
         while (game.getWinner() == 0){
             game.currentPlayerMark();
         }

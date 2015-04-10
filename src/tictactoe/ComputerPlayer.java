@@ -29,7 +29,6 @@ public class ComputerPlayer extends Player{
         Random rand = new Random();
         int[] move = new int[]{rand.nextInt(max+1), rand.nextInt(max+1)};
         lastMove = String.valueOf(move[0])+String.valueOf(move[1])+";";
-        //System.out.println( super.game );
         return move;
     }
 
@@ -50,6 +49,6 @@ public class ComputerPlayer extends Player{
             }
             brain.add(currentBoard+lastMove);
         }
-        System.out.print(brain.toString());
+        System.out.println(brain.toString());
     }
 }    

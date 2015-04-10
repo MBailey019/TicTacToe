@@ -7,25 +7,27 @@
 package tictactoe;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.InputMismatchException;
 
 /**
  *
  * @author Matt
  */
 public class Player {
-    private String name;
+    private final String NAME;
     private int score;
     private Game game;
     
     public Player(String aName){
-        name = aName;
+        NAME = aName;
         score = 0;
     }
 
     public String getName() {
-        return name;
+        return NAME;
     }
 
     public int getScore() {
@@ -35,27 +37,43 @@ public class Player {
     public void setGame(Game aGame) {
         game = aGame;
     }
+    
     public Game getGame(){
         return game;
     }
+    
     public int[] provideInput(int max){
+        int[] comparison = {-1,-1};
         int[] move = {-1,-1};
-       // while (move[1] == -1){
-            //System.out.println( game );
-            System.out.println(name+": Please input 2 numbers between 0 and "+max);
-            Scanner in = new Scanner(System.in);
-            //String input = in.nextLine();
-            //Scanner inputScan = new Scanner(input);
-            move[0] = in.nextInt();
-            move[1] = in.nextInt();
-            System.out.println(move[0]+", "+move[1]);
-            //inputScan.close();
-            //in.close();
-       // }
+            String inputPrompt = NAME;
+            inputPrompt += ": Please input 2 numbers between 0 and " + max;
+            inputPrompt += ", separated by a space.";
+            while (move[0] == -1 || move[1] == -1){
+                System.out.println(inputPrompt);
+                Scanner in = new Scanner(System.in);
+                try{
+                    for (int index = 0; index <= 1; index++){
+                        int potentialMove = in.nextInt();
+                        if( potentialMove <= max &&
+                        potentialMove >= 0){
+                            System.out.println(index+": "+potentialMove);
+                            move[index] = potentialMove;
+                        }
+                        else{
+                            System.out.println("i dunno man: "+ potentialMove);
+                        }
+                    }
+                }catch (InputMismatchException exception){
+                    System.out.println("That's not an integer and you know it!");
+                    move[0] = -1;
+                    move[1] = -1;
+                }
+            }    
+           // System.out.println(move);
         return move;
     }
     
     public void postGame(Game.PlayerState state){
-        score++;
+        if (state == Game.PlayerState.WINNER)score++;
     }
 }
