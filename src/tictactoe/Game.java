@@ -35,7 +35,7 @@ public class Game {
         return newGame;
     }
     
-    public Game(int size, Player player, Player otherPlayer)
+    private Game(int size, Player player, Player otherPlayer)
     {
         BOARD_SIZE = size;
         players = new Player[]{player, null, otherPlayer};
@@ -80,7 +80,6 @@ public class Game {
             }
         }   
         
-        //boardString.append(";");
         return boardString.toString();
     }
 
@@ -102,7 +101,6 @@ public class Game {
     public void placeMark(int x, int y)
     {
         board[x][y] = currentPlayer;
-        //System.out.println(players[currentPlayer+1].getName()+" moved: "+x+", "+y);
         checkForWin();
     }
     
@@ -179,7 +177,7 @@ public class Game {
     {
         winner = currentPlayer;
         
-        System.out.println(players[currentPlayer+1].getName()+" wins");
+        //System.out.println(players[currentPlayer+1].getName()+" wins");
         players[currentPlayer+1].postGame(PlayerState.WINNER);
         players[-currentPlayer+1].postGame(PlayerState.LOSER);
     }
@@ -188,9 +186,9 @@ public class Game {
     {
         winner = -2;
         
-        System.out.println("you're both losers.");
-        players[currentPlayer+1].postGame(PlayerState.NEITHER);
-        players[-currentPlayer+1].postGame(PlayerState.NEITHER);
+        //System.out.println("you're both losers.");
+        players[0].postGame(PlayerState.NEITHER);
+        players[2].postGame(PlayerState.NEITHER);
     }
     
     public void endGame(){

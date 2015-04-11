@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -19,10 +20,58 @@ import java.util.logging.Logger;
  *
  * @author Matt
  */
-public class ComputerPlayer extends Player{
+public class ComputerPlayer extends Player
+{
     private ArrayList<String> brain;
     private String lastMove;
+    private String lastBoard;
 
+    public class Move
+    {
+        private final int ROW;
+        private final int COLUMN;
+        
+        public Move(String inputString) throws NumberFormatException{
+            int componentLength = inputString.length()/2;
+            String firstHalf = inputString.substring(0, componentLength);
+            String otherHalf = inputString.substring(componentLength);
+            ROW = Integer.parseInt(firstHalf);
+            COLUMN = Integer.parseInt(otherHalf);
+        }
+        
+        public Move(int anX, int aY)
+        {
+            ROW = anX;
+            COLUMN = aY;
+        }
+
+        public int getRow() {
+            return ROW;
+        }
+
+        public int getColumn() {
+            return COLUMN;
+        }
+        
+        public int[] toArray(){
+            return new int[]{ROW,COLUMN};
+        }
+        
+        @Override
+        public String toString(){
+            return ROW + "" + COLUMN;
+        }
+        
+        public boolean equals(Move otherMove){
+            if (ROW == otherMove.getRow() &&
+                COLUMN == otherMove.getColumn())
+            {
+                return true;
+            }
+            return false;
+        }
+    }
+    
     public ComputerPlayer(String aName){
         super(aName);
         brain = new ArrayList<>();
@@ -39,8 +88,11 @@ public class ComputerPlayer extends Player{
         Game currentGame = getGame();
         int[][] currentBoard = currentGame.getBoard();
         String boardString = currentGame.toString();
-        //System.out.println("THIS: " + boardString);
-        ArrayList<int[]> possibleMoves = new ArrayList<>();
+        if (boardString.equals("-1-1 0 1-1 1-1 1 0"))
+        {
+            System.out.println("THIS: " + boardString); //DELETE
+        }   
+        ArrayList<Move> possibleMoves = new ArrayList<>();
         
         for (int row =0; row < currentBoard.length; row++)
         {
@@ -48,7 +100,7 @@ public class ComputerPlayer extends Player{
             {
                 if (currentBoard[row][column] == 0)
                 {
-                    int[] possibleMove = {row, column};
+                    Move possibleMove = new Move(row, column);
                     possibleMoves.add(possibleMove);
                 }
             }
@@ -58,29 +110,55 @@ public class ComputerPlayer extends Player{
         for (String previousGame: brain)
         {
             String previousBoard = previousGame.substring(0, gameStringSize);
-            //System.out.println("PREV: " + previousBoard); 
             if (previousBoard.equals(boardString))
             {
+//                System.out.println("PREV: " + previousBoard); //DELETE
                 Scanner previousGameScanner = new Scanner(previousGame);
                 previousGameScanner.useDelimiter(";");
                 previousGameScanner.next();
                 while (previousGameScanner.hasNext())
                 {
-                    String badMove = previousGameScanner.next();
-                    int moveComponentLength = badMove.length() / 2;
-                    int[] badMoveArray = new int[2];
-                    String row = badMove.substring(0, moveComponentLength+1);
-                    String column = badMove.substring( moveComponentLength );
-                    badMoveArray[0] = Integer.parseInt(row);
-                    badMoveArray[1] = Integer.parseInt(column);
-                    int possibleMoveIndex = possibleMoves.indexOf(badMove);
-                    System.out.println("BAD: "+badMoveArray[0]+", "+badMoveArray[1]); //DELETE
-                    System.out.println("POS: "+possibleMoves.toString()); //DELETE
-                    if (possibleMoveIndex >= 0)
+                    String badString = previousGameScanner.next();
+                    Move badMove = new Move(badString);
+                    if (boardString.equals("-1-1 0 1-1 1-1 1 0"))
                     {
-                        possibleMoves.remove(possibleMoveIndex);
+                        System.out.println("BAD: "+badMove.getRow()+", "+badMove.getColumn());
+                    }
+//                    Iterator<Move> moveIterator = possibleMoves.iterator();
+//                    while (moveIterator.hasNext()){
+//                        Move move = moveIterator.next();
+//                        if (badMove.equals(move))
+//                        {
+//                            possibleMoves.remove(move);
+//                        }
+//                    }
+                    int toRemove = -1;
+                    for (Move move: possibleMoves)
+                    {
+                        if (boardString.equals("-1-1 0 1-1 1-1 1 0"))
+                        {
+                            System.out.println(" -p: "+move.getRow()+", "+move.getColumn()+", Match? " + move.equals(badMove));
+                        }      
+                        if (move.equals(badMove))
+                        {
+                            toRemove = possibleMoves.indexOf(move);
+                            if (boardString.equals("-1-1 0 1-1 1-1 1 0")){
+                                System.out.println("TR: "+toRemove);
+                                System.out.println("size: "+possibleMoves.size());
+                            }
+                            
+                        }
+                    }
+                    if (toRemove != -1 && possibleMoves.size() > 1)
+                    {
+                        Move removed = possibleMoves.remove(toRemove);
+                        //System.out.println("REMOVED:" +removed.toString());
                     }
                 }
+                if (boardString.equals("-1-1 0 1-1 1-1 1 0"))
+                {
+                    System.out.println("P: "+possibleMoves);
+                }    
             }
         }
         
@@ -88,9 +166,18 @@ public class ComputerPlayer extends Player{
         Random randomGenerator = new Random();
         int movesLength = possibleMoves.size();
         int moveChoice = randomGenerator.nextInt(movesLength);
-        int[] move = possibleMoves.get(moveChoice);
-        lastMove = String.format("%1d%1d;", move[0], move[1]);
-        return move;
+        Move chosenMove = possibleMoves.get(moveChoice);
+        lastMove = chosenMove.toString();
+        if (possibleMoves.size() == 1)
+        {
+            lastMove = null;
+        }
+        lastBoard = boardString;
+        if (boardString.equals("-1-1 0 1-1 1-1 1 0"))
+        {
+            System.out.println("FINALMOVE: "+lastMove);
+        }
+        return chosenMove.toArray();
     }
 
     @Override
@@ -98,7 +185,7 @@ public class ComputerPlayer extends Player{
     {
         if (state == Game.PlayerState.LOSER)
         {
-            String currentBoard = getGame().toString();
+           // String currentBoard = getGame().toString();
            // System.out.println("currentBoard: "+currentBoard);
             for (int i=0; i<brain.size(); i++)
             {
@@ -108,17 +195,20 @@ public class ComputerPlayer extends Player{
                 String pastBoard = brainScanner.next();
                 //if (i<1) System.out.println(pastBoard);
                 //if (i<1) System.out.println(currentBoard);
-                if (currentBoard.equals(pastBoard))
+                if (lastBoard.equals(pastBoard))
                 {
                     //System.out.println("fucking MAtch!!===");
                     //System.out.println("pastBoard");
-                    String updatedGame = pastGame+lastMove;
-                    brain.set(i, updatedGame);
+                    if (lastMove != null)
+                    {
+                        String updatedGame = pastGame+lastMove+";";
+                        brain.set(i, updatedGame);
+                    }
                     brainScanner.close();
                     return;
                 }
             }
-            brain.add(currentBoard+";"+lastMove);
+            brain.add(lastBoard+";"+lastMove+";");
         }
         //System.out.println(brain.toString());
     }
