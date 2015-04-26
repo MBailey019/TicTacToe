@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.Scanner;
@@ -22,9 +23,6 @@ import java.util.logging.Logger;
  */
 public class ComputerPlayer extends Player
 {
-    private ArrayList<String> brain;
-    private String lastMove;
-    private String lastBoard;
 
     public class Move
     {
@@ -39,10 +37,10 @@ public class ComputerPlayer extends Player
             COLUMN = Integer.parseInt(otherHalf);
         }
         
-        public Move(int anX, int aY)
+        public Move(int aY, int anX)
         {
-            ROW = anX;
-            COLUMN = aY;
+            ROW = aY;
+            COLUMN = anX;
         }
 
         public int getRow() {
@@ -71,146 +69,139 @@ public class ComputerPlayer extends Player
             return false;
         }
     }
+    private ArrayList<GameState> brain;
+    private String[] gameBoards;
+    private Move[] gameMoves;
+    private int movesCount = 0;
     
     public ComputerPlayer(String aName){
         super(aName);
         brain = new ArrayList<>();
+        gameBoards = new String[9];
+        gameMoves = new Move[9];
     }
     
     public ComputerPlayer(String aName, String brainFile) throws FileNotFoundException{
+        // @TODO fix brainToFile()
         super(aName);
         brain = fileToBrain(brainFile);
+        gameBoards = new String[9];
+        gameMoves = new Move[9];
     }
 
     @Override
     public int[] provideInput(int max)
     {
-        Game currentGame = getGame();
-        int[][] currentBoard = currentGame.getBoard();
-        String boardString = currentGame.toString();
-        if (boardString.equals("-1-1 0 1-1 1-1 1 0"))
+        boolean found = false;
+        int highestIndex = 0;
+        String currentBoard = getGame().toString();
+        if (brain.size() > 0)
         {
-            System.out.println("THIS: " + boardString); //DELETE
-        }   
+            while (brain.size() > highestIndex &&
+                    brain.get(highestIndex).compareTo(currentBoard) >= 0)
+            {
+                //System.out.println("Searching brain @ "+highestIndex);
+                if (brain.get(highestIndex).compareTo(currentBoard) == 0)
+                {
+                    found = true;
+                    //System.out.println("Found match @ "+highestIndex);
+                }
+                else
+                {
+                    //System.out.println("No match @ "+highestIndex); 
+                }
+                highestIndex++;
+            }
+        }
+        //System.out.println("Highest index checked: "+highestIndex);
+        int accessPoint = highestIndex - 1;
+        int insertionPoint = highestIndex;
+        if (!found)
+        {
+            accessPoint++;
+            
+            //System.out.println("Inserting new mem @ "+ insertionPoint); 
+            GameState newState = new GameState(currentBoard);
+            brain.add(insertionPoint, newState);
+            //System.out.println(brain.get(insertionPoint).compareTo(currentBoard));
+        }
+        //System.out.println("Accessing Brain @: "+ accessPoint);
+        GameState thisGame = brain.get(accessPoint);
         ArrayList<Move> possibleMoves = new ArrayList<>();
-        
-        for (int row =0; row < currentBoard.length; row++)
+        int totalWeight = 0;
+        Move chosenMove = null;
+        for (int rowIndex= 0; rowIndex < 3; rowIndex++)
         {
-            for (int column =0; column < currentBoard[row].length; column++)
+            for (int columnIndex = 0; columnIndex < 3; columnIndex++)
             {
-                if (currentBoard[row][column] == 0)
+                double probability = thisGame.getWinProbability()[rowIndex][columnIndex];
+                int weight = (int) Math.floor(probability * 10);
+                Move move = new Move(rowIndex, columnIndex);
+                for ( int count = 0; count < weight; count++)
                 {
-                    Move possibleMove = new Move(row, column);
-                    possibleMoves.add(possibleMove);
+                    totalWeight++;
+                    possibleMoves.add(move);
+                }
+                if (totalWeight == 0 && probability > 0.0)
+                {
+                    chosenMove = move;
                 }
             }
         }
-        
-        int gameStringSize = 2 * (getGame().BOARD_SIZE * getGame().BOARD_SIZE);
-        for (String previousGame: brain)
-        {
-            String previousBoard = previousGame.substring(0, gameStringSize);
-            if (previousBoard.equals(boardString))
-            {
-//                System.out.println("PREV: " + previousBoard); //DELETE
-                Scanner previousGameScanner = new Scanner(previousGame);
-                previousGameScanner.useDelimiter(";");
-                previousGameScanner.next();
-                while (previousGameScanner.hasNext())
-                {
-                    String badString = previousGameScanner.next();
-                    Move badMove = new Move(badString);
-                    if (boardString.equals("-1-1 0 1-1 1-1 1 0"))
-                    {
-                        System.out.println("BAD: "+badMove.getRow()+", "+badMove.getColumn());
-                    }
-//                    Iterator<Move> moveIterator = possibleMoves.iterator();
-//                    while (moveIterator.hasNext()){
-//                        Move move = moveIterator.next();
-//                        if (badMove.equals(move))
-//                        {
-//                            possibleMoves.remove(move);
-//                        }
-//                    }
-                    int toRemove = -1;
-                    for (Move move: possibleMoves)
-                    {
-                        if (boardString.equals("-1-1 0 1-1 1-1 1 0"))
-                        {
-                            System.out.println(" -p: "+move.getRow()+", "+move.getColumn()+", Match? " + move.equals(badMove));
-                        }      
-                        if (move.equals(badMove))
-                        {
-                            toRemove = possibleMoves.indexOf(move);
-                            if (boardString.equals("-1-1 0 1-1 1-1 1 0")){
-                                System.out.println("TR: "+toRemove);
-                                System.out.println("size: "+possibleMoves.size());
-                            }
-                            
-                        }
-                    }
-                    if (toRemove != -1 && possibleMoves.size() > 1)
-                    {
-                        Move removed = possibleMoves.remove(toRemove);
-                        //System.out.println("REMOVED:" +removed.toString());
-                    }
-                }
-                if (boardString.equals("-1-1 0 1-1 1-1 1 0"))
-                {
-                    System.out.println("P: "+possibleMoves);
-                }    
-            }
-        }
-        
-//        System.out.println(lastMove);
-        Random randomGenerator = new Random();
         int movesLength = possibleMoves.size();
-        int moveChoice = randomGenerator.nextInt(movesLength);
-        Move chosenMove = possibleMoves.get(moveChoice);
-        lastMove = chosenMove.toString();
-        if (possibleMoves.size() == 1)
-        {
-            lastMove = null;
+        if (movesLength > 0){
+            Random randomGenerator = new Random();
+            int moveChoice = randomGenerator.nextInt(movesLength);
+            chosenMove = possibleMoves.get(moveChoice);
         }
-        lastBoard = boardString;
-        if (boardString.equals("-1-1 0 1-1 1-1 1 0"))
-        {
-            System.out.println("FINALMOVE: "+lastMove);
-        }
+        
+        gameBoards[movesCount] = currentBoard;
+        gameMoves[movesCount] = chosenMove;
+        movesCount++;
+        
         return chosenMove.toArray();
     }
 
     @Override
     public void postGame(Game.PlayerState state)
     {
-        if (state == Game.PlayerState.LOSER)
+        
+        int score = 0;
+        if (state == Game.PlayerState.WINNER)
         {
-           // String currentBoard = getGame().toString();
-           // System.out.println("currentBoard: "+currentBoard);
-            for (int i=0; i<brain.size(); i++)
-            {
-                String pastGame = brain.get(i);
-                //if (i<1) System.out.println(pastGame);
-                Scanner brainScanner = new Scanner(pastGame).useDelimiter(";");
-                String pastBoard = brainScanner.next();
-                //if (i<1) System.out.println(pastBoard);
-                //if (i<1) System.out.println(currentBoard);
-                if (lastBoard.equals(pastBoard))
-                {
-                    //System.out.println("fucking MAtch!!===");
-                    //System.out.println("pastBoard");
-                    if (lastMove != null)
-                    {
-                        String updatedGame = pastGame+lastMove+";";
-                        brain.set(i, updatedGame);
-                    }
-                    brainScanner.close();
-                    return;
-                }
-            }
-            brain.add(lastBoard+";"+lastMove+";");
+            score = 1;
         }
-        //System.out.println(brain.toString());
+        //System.out.println("begin POST_GAME()");
+        for (int turnCount = 0; turnCount < gameBoards.length; turnCount++)
+        {
+            if(gameBoards[turnCount] != null)
+            {
+                String gameBoard = gameBoards[turnCount];
+                int brainIndex = 0;
+                while (brain.size() > brainIndex &&
+                        brain.get(brainIndex).compareTo(gameBoard) >= 0)
+                {
+                    if (brain.get(brainIndex).compareTo(gameBoard) == 0)
+                    {
+                        Move gameMove = gameMoves[turnCount];
+                        int row = gameMove.getRow();
+                        int column = gameMove.getColumn();
+
+                        GameState pastGame = brain.get(brainIndex);
+                        double oldProbability = pastGame.getWinProbability()[row][column];
+                        int count = pastGame.getOccuranceCounter()[row][column];
+                        double newProbability = (oldProbability * count) + score;
+                        newProbability /= (count + 1);
+                        pastGame.getWinProbability()[row][column] = newProbability;
+                        pastGame.getOccuranceCounter()[row][column]++;
+                    }
+                    brainIndex++;
+                } 
+            }
+        }
+        Arrays.fill(gameBoards, null);
+        Arrays.fill(gameMoves, null);
+        movesCount = 0;
     }
     
     public void brainToFile(){
@@ -221,9 +212,9 @@ public class ComputerPlayer extends Player
             PrintWriter brainWriter = new PrintWriter(outFilename+".txt");
             try
             {
-                for (String previousGame: brain){
+                for (GameState previousGame: brain){
                     //brainWriter.print(brain.indexOf(previousGame));
-                    brainWriter.println(previousGame);
+                    brainWriter.println(previousGame.toString());
                 }
             }
             finally
@@ -237,14 +228,31 @@ public class ComputerPlayer extends Player
         }
     }
     
-    private ArrayList<String> fileToBrain(String filename) throws FileNotFoundException{
+    private ArrayList<GameState> fileToBrain(String filename) throws FileNotFoundException
+    {
+        System.out.println("Loading Brain: " + filename);
         File newBrainFile = new File(filename);
-        ArrayList<String> freshBrain;
+        ArrayList<GameState> freshBrain;
         try (Scanner brainScanner = new Scanner(newBrainFile)) {
             freshBrain = new ArrayList<>();
             while(brainScanner.hasNextLine()){
                 String gameMemory = brainScanner.nextLine();
-                freshBrain.add(gameMemory);
+                Scanner memoryScanner = new Scanner(gameMemory);
+                memoryScanner.useDelimiter(";");
+                String configuration = memoryScanner.next();
+                GameState game = new GameState(configuration);
+                while (memoryScanner.hasNext())
+                {
+                    String move = memoryScanner.next();
+                    int row = Integer.valueOf(move.substring(1,2));
+                    int column = Integer.valueOf(move.substring(3,4));
+                    double prob = Double.parseDouble(move.substring(5,12));
+                    int count = Integer.parseInt(move.substring(13));
+                    
+                    game.setWinProbabilityAt(row, column, prob);
+                    game.setOccuranceCounterAt(row, row, count);
+                }
+                freshBrain.add(game);
             }
         } 
         return freshBrain;

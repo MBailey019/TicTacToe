@@ -29,10 +29,11 @@ public class TicTacToe {
             //Player wargames = new ComputerPlayer("WOPR");
             //Player spaceOdyssey = new ComputerPlayer("HAL");
             Game game = Game.setupGame(3, frances, spaceOdyssey);
-            for (int gameNumber = 0; gameNumber<1; gameNumber++)
+            for (int gameNumber = 0; gameNumber < 1; gameNumber++)
             {
                 while (game.getWinner() == 0)
                 {
+                    
                     game.currentPlayerMark();
                 }
                 game.clearBoard();
