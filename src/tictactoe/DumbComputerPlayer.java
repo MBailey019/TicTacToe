@@ -11,7 +11,7 @@ import java.util.Random;
  * @since 04/10/15
  * @version 1.0
  */
-public class DumbComputerPlayer extends Player 
+public class DumbComputerPlayer extends ComputerPlayer 
 {
     
     /**
