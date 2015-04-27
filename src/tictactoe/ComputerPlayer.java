@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package tictactoe;
 
 import java.io.File;
@@ -18,18 +12,45 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * A pseudo-intelligent player controlled by the computer.
+ * 
+ * Uses statistical data to determine the move with the
+ * best probability of leading to a win.
+ * 
+ * <h2>CS&143 S1 | Project 2 - Tic-Tac-Toe</h2>
  *
- * @author Matt
+ * @author Matt Bailey (MBaileyWebDev@gmail.com)
+ * @since 04/26/15
+ * @version 1.5
  */
 public class ComputerPlayer extends Player
 {
 
+    /**
+     * Used by ComputerPlayer for interacting with the game.
+     * 
+     * A specialized array that can be converted to and from 
+     * multiple different forms for easy comparison and 
+     * interaction with other objects.
+     * 
+     * <h2>CS&143 S1 | Project 2 - Tic-Tac-Toe</h2>
+     * 
+     * @author Matt Bailey (MBaileyWebDev@gmail.com)
+     * @since 04/10/15
+     * @version 1.0
+     */
     public class Move
     {
         private final int ROW;
         private final int COLUMN;
         
-        public Move(String inputString) throws NumberFormatException{
+        /**
+         * Instantiates a Move from a String.
+         * @param inputString the String
+         * @throws NumberFormatException 
+         */
+        public Move(String inputString) throws NumberFormatException
+        {
             int componentLength = inputString.length()/2;
             String firstHalf = inputString.substring(0, componentLength);
             String otherHalf = inputString.substring(componentLength);
@@ -37,30 +58,61 @@ public class ComputerPlayer extends Player
             COLUMN = Integer.parseInt(otherHalf);
         }
         
+        /**
+         * Instantiates a Move from a pair of integer values.
+         * @param aY the y-coordinate
+         * @param anX the x-coordinate
+         */
         public Move(int aY, int anX)
         {
             ROW = aY;
             COLUMN = anX;
         }
 
-        public int getRow() {
+        /**
+         * gets the Move's row.
+         * @return the row
+         */
+        public int getRow()
+        {
             return ROW;
         }
 
-        public int getColumn() {
+        /**
+         * gets the Move's column.
+         * @return the column
+         */
+        public int getColumn()
+        {
             return COLUMN;
         }
         
-        public int[] toArray(){
+        /**
+         * Converts the Move to an array of integers.
+         * @return the array
+         */
+        public int[] toArray()
+        {
             return new int[]{ROW,COLUMN};
         }
         
+        /**
+         * Converts the Move to a String
+         * @return the String
+         */
         @Override
-        public String toString(){
+        public String toString()
+        {
             return ROW + "" + COLUMN;
         }
         
-        public boolean equals(Move otherMove){
+        /**
+         * Determines whether one Move is equal to another.
+         * @param otherMove the comparison Move
+         * @return boolean
+         */
+        public boolean equals(Move otherMove)
+        {
             if (ROW == otherMove.getRow() &&
                 COLUMN == otherMove.getColumn())
             {
@@ -69,26 +121,116 @@ public class ComputerPlayer extends Player
             return false;
         }
     }
+    
     private ArrayList<GameState> brain;
     private String[] gameBoards;
     private Move[] gameMoves;
     private int movesCount = 0;
     
-    public ComputerPlayer(String aName){
+    /**
+     * Instantiates a ComputerPlayer with default values.
+     */
+    public ComputerPlayer()
+    {
+        super();
+    }
+    
+    /**
+     * Instantiates a ComputerPlayer with a custom name and an empty brain.
+     * @param aName the name
+     */
+    public ComputerPlayer(String aName)
+    {
         super(aName);
         brain = new ArrayList<>();
         gameBoards = new String[9];
         gameMoves = new Move[9];
     }
     
-    public ComputerPlayer(String aName, String brainFile) throws FileNotFoundException{
-        // @TODO fix brainToFile()
+    /**
+     * Instantiates a ComputerPlayer with a custom name and populates the brain.  
+     * @param aName the name
+     * @param brainFile the address of the brain-file
+     * @throws FileNotFoundException 
+     */
+    public ComputerPlayer(String aName, String brainFile) throws FileNotFoundException
+    {
         super(aName);
         brain = fileToBrain(brainFile);
         gameBoards = new String[9];
         gameMoves = new Move[9];
     }
 
+    /**
+     * Gets the ComputerPlayer's brain.
+     * @return the brain
+     */
+    public ArrayList<GameState> getBrain() {
+        return brain;
+    }
+
+    /**
+     * Sets the ComputerPlayer's brain.
+     * @param brain new brain
+     */
+    public void setBrain(ArrayList<GameState> brain) {
+        this.brain = brain;
+    }
+
+    /**
+     * Gets the ComputerPlayer's gameBoards array.
+     * @return the array
+     */
+    public String[] getGameBoards() {
+        return gameBoards;
+    }
+
+    /**
+     * Sets the ComputerPlayer's gameBoards array.
+     * @param gameBoards new gameBoards
+     */
+    public void setGameBoards(String[] gameBoards) {
+        this.gameBoards = gameBoards;
+    }
+
+    /**
+     * Gets the ComputerPlayer's gameMoves array.
+     * @return the array
+     */
+    public Move[] getGameMoves() {
+        return gameMoves;
+    }
+
+    /**
+     * Sets the ComputerPlayer's gameMoves array.
+     * @param gameMoves new gameMoves
+     */
+    public void setGameMoves(Move[] gameMoves) {
+        this.gameMoves = gameMoves;
+    }
+
+    /**
+     * Gets the ComputerPlayer's moves count
+     * @return the count
+     */
+    public int getMovesCount() {
+        return movesCount;
+    }
+
+    /**
+     * Sets the ComputerPlayer's moves count
+     * @param movesCount new count
+     */
+    public void setMovesCount(int movesCount) {
+        this.movesCount = movesCount;
+    }
+    
+
+    /**
+     * Provides a move likely to win in a game of tic-tac-toe. 
+     * @param max the maximum accepted value
+     * @return a move
+     */
     @Override
     public int[] provideInput(int max)
     {
@@ -100,32 +242,24 @@ public class ComputerPlayer extends Player
             while (brain.size() > highestIndex &&
                     brain.get(highestIndex).compareTo(currentBoard) >= 0)
             {
-                //System.out.println("Searching brain @ "+highestIndex);
                 if (brain.get(highestIndex).compareTo(currentBoard) == 0)
                 {
                     found = true;
-                    //System.out.println("Found match @ "+highestIndex);
                 }
                 else
                 {
-                    //System.out.println("No match @ "+highestIndex); 
                 }
                 highestIndex++;
             }
         }
-        //System.out.println("Highest index checked: "+highestIndex);
         int accessPoint = highestIndex - 1;
         int insertionPoint = highestIndex;
         if (!found)
         {
             accessPoint++;
-            
-            //System.out.println("Inserting new mem @ "+ insertionPoint); 
             GameState newState = new GameState(currentBoard);
             brain.add(insertionPoint, newState);
-            //System.out.println(brain.get(insertionPoint).compareTo(currentBoard));
         }
-        //System.out.println("Accessing Brain @: "+ accessPoint);
         GameState thisGame = brain.get(accessPoint);
         ArrayList<Move> possibleMoves = new ArrayList<>();
         int totalWeight = 0;
@@ -162,6 +296,10 @@ public class ComputerPlayer extends Player
         return chosenMove.toArray();
     }
 
+    /**
+     * updates the players brain after a game is finished.
+     * @param state the player's state at the end of a game
+     */
     @Override
     public void postGame(Game.PlayerState state)
     {
@@ -171,7 +309,6 @@ public class ComputerPlayer extends Player
         {
             score = 1;
         }
-        //System.out.println("begin POST_GAME()");
         for (int turnCount = 0; turnCount < gameBoards.length; turnCount++)
         {
             if(gameBoards[turnCount] != null)
@@ -189,11 +326,11 @@ public class ComputerPlayer extends Player
 
                         GameState pastGame = brain.get(brainIndex);
                         double oldProbability = pastGame.getWinProbability()[row][column];
-                        int count = pastGame.getOccuranceCounter()[row][column];
+                        int count = pastGame.getOccurrenceCounter()[row][column];
                         double newProbability = (oldProbability * count) + score;
                         newProbability /= (count + 1);
                         pastGame.getWinProbability()[row][column] = newProbability;
-                        pastGame.getOccuranceCounter()[row][column]++;
+                        pastGame.getOccurrenceCounter()[row][column]++;
                     }
                     brainIndex++;
                 } 
@@ -204,6 +341,9 @@ public class ComputerPlayer extends Player
         movesCount = 0;
     }
     
+    /**
+     * Writes the brain array to a text file.
+     */
     public void brainToFile(){
         int gameSize = getGame().BOARD_SIZE;
         String outFilename = getName()+"_brain-"+gameSize+"X"+gameSize;
@@ -228,9 +368,15 @@ public class ComputerPlayer extends Player
         }
     }
     
-    private ArrayList<GameState> fileToBrain(String filename) throws FileNotFoundException
+    /**
+     * Reads a text file into the brain array.
+     * @param filename the file to write to
+     * @return brrraaains!!!
+     * @throws FileNotFoundException 
+     */
+    private ArrayList<GameState> fileToBrain(String filename)
+            throws FileNotFoundException
     {
-        System.out.println("Loading Brain: " + filename);
         File newBrainFile = new File(filename);
         ArrayList<GameState> freshBrain;
         try (Scanner brainScanner = new Scanner(newBrainFile)) {

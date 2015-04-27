@@ -5,13 +5,11 @@ package tictactoe;
  * 
  * sets up the board for each round, gets and process inputs and informs play-state
  *
- * <h5>CS&143 S1</h5>
- * 
- * <h5>Project 2 - Tic-Tac-Toe</h5>
- * 
- * <h5>4/10/2015</h5>
+ * <h2>CS&143 S1 | Project 2 - Tic-Tac-Toe</h2>
  *
- * @author Matt Bailey    
+ * @author Matt Bailey (MBaileyWebDev@gmail.com)
+ * @since 04/10/15
+ * @version 1.0    
  */ 
 public class Game {
     
@@ -81,18 +79,67 @@ public class Game {
     {
         return winner;
     }
+
+    /**
+     * Sets the game's winner.
+     * @param winner the winner
+     */
+    public void setWinner(int winner) {
+        this.winner = winner;
+    }
     
     /**
-     * retrieves the current board as a 2-dimensional array
+     * retrieves the current board as a 2-dimensional array.
      * @return the board
      */
     public int[][] getBoard()
     {
         return board;
     }
+
+    /**
+     * Sets the games board configuration.
+     * @param board the configuration
+     */
+    public void setBoard(int[][] board) {
+        this.board = board;
+    }
+
+    /**
+     * Gets the player array.
+     * @return the array
+     */
+    public Player[] getPlayers() {
+        return players;
+    }
+
+    /**
+     * Sets the player array.
+     * @param players new player array
+     */
+    public void setPlayers(Player[] players) {
+        this.players = players;
+    }
+
+    /**
+     * Gets the current player
+     * @return current player
+     */
+    public int getCurrentPlayer() {
+        return currentPlayer;
+    }
+
+    /**
+     * Sets the current player.
+     * @param currentPlayer new current player
+     */
+    public void setCurrentPlayer(int currentPlayer) {
+        this.currentPlayer = currentPlayer;
+    }
+    
     
     /**
-     * Retrieves a string representation of the current board
+     * Retrieves a string representation of the current board.
      * @return the board as a string
      */
     @Override
@@ -120,7 +167,6 @@ public class Game {
     {
         boolean valid = false;
         int[] move;
-        //System.out.println(players[currentPlayer+1].getName() + " going.");
         while (!valid)
         {
             move = players[currentPlayer+1].provideInput(board.length-1);
@@ -133,7 +179,7 @@ public class Game {
     }
     
     /**
-     * places the current player's mark on the board at the specified position
+     * Places the current player's mark on the board at the specified position.
      * @param row the row to place the mark in
      * @param column the column to place the mark in
      */
@@ -144,7 +190,7 @@ public class Game {
     }
     
     /**
-     * determines if the current game has a winner
+     * Determines if the current game has a winner.
      */
     public void checkForWin()
     {
@@ -189,32 +235,32 @@ public class Game {
     }
     
     /**
-     * prints the board to the console
+     * Prints the board to the console.
      */
     public void printBoard()
     {
         if (!(players[0] instanceof ComputerPlayer &&
             players[2] instanceof ComputerPlayer))
         {
-        for (int row = 0; row < board.length; row++)
-        {
-            for (int column = 0; column < board[row].length; column++)
+            System.out.print("\n\n");
+            for (int row = 0; row < board.length; row++)
             {
-                String markToDisplay = " ";
-                if (board[row][column] == -1){ markToDisplay = "X";}
-                if (board[row][column] == 1){markToDisplay = "O";}
-                if (column < board.length-1){markToDisplay += "|";}
-                System.out.print(markToDisplay);
-            }
-            if (row < board.length-1){ System.out.print("\n-----\n");}
-        }   
-        System.out.print("\n");
-        System.out.println(toString());
+                for (int column = 0; column < board[row].length; column++)
+                {
+                    String markToDisplay = " ";
+                    if (board[row][column] == -1){ markToDisplay = "X";}
+                    if (board[row][column] == 1){markToDisplay = "O";}
+                    if (column < board.length-1){markToDisplay += " | ";}
+                    System.out.print(markToDisplay);
+                }
+                if (row < board.length-1){ System.out.print("\n---------\n");}
+            }   
+        System.out.print("\n\n");
         }
     }
     
     /**
-     * switches current player back and forth
+     * Switches current player back and forth.
      */
     public void switchPlayer()
     {
@@ -222,31 +268,29 @@ public class Game {
     }
     
     /**
-     * sets the game's winner & notifies players of game outcome
+     * Sets the game's winner & notifies players of game outcome.
      */
     public void announceWinner()
     {
         winner = currentPlayer;
         
-        //System.out.println(players[currentPlayer+1].getName()+" wins");
         players[currentPlayer+1].postGame(PlayerState.WINNER);
         players[-currentPlayer+1].postGame(PlayerState.LOSER);
     }
     
     /**
-     * notifies players of a draw and resets board
+     * Notifies players of a draw and resets board.
      */
     public void announceDraw()
     {
         winner = -2;
         
-        //System.out.println("you're both losers.");
         players[0].postGame(PlayerState.NEITHER);
         players[2].postGame(PlayerState.NEITHER);
     }
     
     /**
-     * notifies players that the game has ended
+     * Notifies players that the game has ended.
      */
     public void endGame(){
         for( Player player: players ){
